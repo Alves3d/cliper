@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#04080f">
+<meta name="mobile-web-app-capable" content="yes">
+<title>CipherChat</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04080f;--bg2:#080e1a;--bg3:#0d1525;--card:#0a1120;
+  --border:rgba(0,200,150,.10);--border2:rgba(0,200,150,.28);
+  --accent:#00c896;--accent2:#00e6aa;--glow:rgba(0,200,150,.18);
+  --dim:rgba(0,200,150,.06);--red:#ff4d6d;
+  --text:#c8ffe8;--text2:#5a8a72;--text3:#2a4a3a;
+  --mono:'Share Tech Mono',monospace;--sans:'Syne',sans-serif;
+}
+body{font-family:var(--sans);color:var(--text);min-height:100dvh;max-width:480px;margin:0 auto;overflow-x:hidden;
+  background:radial-gradient(ellipse 70% 50% at 50% -10%,rgba(0,200,150,.07) 0%,transparent 60%),
+  repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,200,150,.03) 39px,rgba(0,200,150,.03) 40px),
+  repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(0,200,150,.02) 39px,rgba(0,200,150,.02) 40px),var(--bg);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.03) 0px,rgba(0,0,0,.03) 1px,transparent 1px,transparent 2px);}
+.screen{min-height:100dvh;display:flex;flex-direction:column}
+.hdr{padding:36px 20px 20px;text-align:center}
+.hdr-logo{font-family:var(--sans);font-size:28px;font-weight:800;letter-spacing:2px;color:var(--accent2);
+  text-shadow:0 0 20px var(--accent),0 0 40px rgba(0,200,150,.3);display:block;margin-bottom:4px}
+.hdr-sub{font-size:11px;color:var(--text2);letter-spacing:3px;text-transform:uppercase;font-family:var(--mono)}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent);margin-right:6px;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.tbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(4,8,15,.94);
+  backdrop-filter:blur(12px);z-index:20}
+.tbar-title{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--accent2);font-family:var(--mono);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+.tbar-side{display:flex;gap:5px;width:60px}.tbar-side:last-child{justify-content:flex-end}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin:0 14px 10px}
+.card h3{font-size:12px;font-weight:700;margin-bottom:8px;letter-spacing:1.5px;color:var(--accent2);font-family:var(--mono)}
+.card p{font-size:12px;line-height:1.6;color:var(--text2)}
+.btn{display:block;width:100%;padding:12px 16px;border-radius:8px;font-family:var(--sans);font-size:13px;
+  font-weight:700;border:none;cursor:pointer;transition:all .15s;margin-top:8px;text-align:center;letter-spacing:.5px}
+.btn-p{background:var(--accent);color:#04080f;box-shadow:0 0 18px var(--glow),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn-p:hover{background:var(--accent2)}.btn-p:active{transform:scale(.98)}
+.btn-o{background:transparent;color:var(--accent);border:1px solid var(--border2)}.btn-o:hover{background:var(--dim)}
+.btn-r{background:rgba(255,77,109,.1);color:var(--red);border:1px solid rgba(255,77,109,.25)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
+.btn-txt{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--mono);
+  text-decoration:underline;padding:5px 2px}
+.ibtn{background:rgba(0,200,150,.08);border:1px solid var(--border2);border-radius:8px;width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;flex-shrink:0}
+.ibtn:hover{background:rgba(0,200,150,.16);box-shadow:0 0 10px var(--glow)}
+.ig{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.ig label{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-family:var(--mono)}
+.ig input,.ig textarea{background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:12px;
+  outline:none;transition:border-color .15s;width:100%}
+.ig input:focus,.ig textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--glow)}
+.hint{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.key-box{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;
+  padding:10px 12px;font-family:var(--mono);font-size:9px;color:var(--accent);
+  word-break:break-all;line-height:1.8;margin:8px 0 4px;user-select:all;cursor:text}
+.steps{display:flex;flex-direction:column;gap:7px;padding:0 14px;margin-bottom:8px}
+.step{display:flex;align-items:flex-start;gap:10px;background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:11px 13px;font-size:12px;line-height:1.5;color:var(--text2)}
+.step strong{color:var(--text)}
+.step-n{background:var(--accent);color:#04080f;width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
+  flex-shrink:0;margin-top:1px;font-family:var(--mono)}
+.div-or{text-align:center;color:var(--text3);font-size:11px;font-family:var(--mono);
+  margin:4px 0;position:relative}
+.div-or::before,.div-or::after{content:'';position:absolute;top:50%;width:38%;height:1px;background:var(--border)}
+.div-or::before{left:5%}.div-or::after{right:5%}
+.chat-wrap{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:8px;padding-bottom:72px}
+.chat-wrap::-webkit-scrollbar{width:3px}
+.chat-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.bubble{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.55;word-break:break-word}
+.bubble.me{align-self:flex-end;background:linear-gradient(135deg,rgba(0,200,150,.18),rgba(0,200,150,.10));
+  border:1px solid rgba(0,200,150,.25);border-bottom-right-radius:3px}
+.bubble.them{align-self:flex-start;background:var(--card);border:1px solid var(--border);border-bottom-left-radius:3px}
+.bubble-from{font-size:10px;color:var(--accent);margin-bottom:3px;font-family:var(--mono)}
+.bubble-meta{font-size:9px;color:var(--text3);margin-top:4px;font-family:var(--mono);display:flex;align-items:center;gap:6px}
+.bubble.me .bubble-meta{justify-content:flex-end}
+.enc-badge{font-size:8px;font-family:var(--mono);color:var(--accent);border:1px solid rgba(0,200,150,.2);border-radius:4px;padding:1px 5px}
+.input-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;
+  background:rgba(4,8,15,.96);border-top:1px solid var(--border);padding:10px 14px;
+  display:flex;gap:8px;align-items:flex-end;z-index:50;backdrop-filter:blur(12px)}
+.input-bar textarea{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:13px;
+  outline:none;resize:none;max-height:100px;min-height:40px;transition:border-color .15s;line-height:1.4}
+.input-bar textarea:focus{border-color:var(--accent)}
+.send-btn{width:40px;height:40px;border-radius:10px;background:var(--accent);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+  transition:all .15s;box-shadow:0 0 14px var(--glow)}
+.send-btn:hover{background:var(--accent2)}.send-btn:active{transform:scale(.92)}.send-btn:disabled{opacity:.35;cursor:not-allowed}
+.sess-strip{text-align:center;padding:5px 14px}
+.sess-chip{display:inline-flex;align-items:center;gap:6px;background:var(--dim);border:1px solid var(--border);
+  border-radius:20px;padding:4px 10px;font-size:9px;font-family:var(--mono);color:var(--accent);cursor:pointer;transition:background .15s}
+.sess-chip:hover{background:rgba(0,200,150,.1)}
+.empty{text-align:center;color:var(--text3);font-size:11px;padding:48px 20px;line-height:2.6;font-family:var(--mono)}
+.empty-ico{font-size:36px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(0,200,150,.3))}
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);
+  padding:8px 16px;border-radius:20px;font-size:12px;font-family:var(--mono);border:1px solid var(--border2);
+  z-index:9999;animation:tin .18s ease,tout .3s ease 2.1s forwards;white-space:nowrap;pointer-events:none}
+.te{border-color:rgba(255,77,109,.4);color:var(--red)}.ts{border-color:rgba(0,200,150,.4);color:var(--accent2)}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}}
+@keyframes tout{to{opacity:0;transform:translateX(-50%) translateY(8px)}}
+.err{background:rgba(255,77,109,.07);border:1px solid rgba(255,77,109,.2);color:var(--red);
+  padding:10px 13px;border-radius:8px;font-size:11px;margin:0 14px;font-family:var(--mono)}
+.info-row{display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono);
+  padding:5px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-row span:first-child{color:var(--text2);white-space:nowrap;margin-right:8px}
+.info-row span:last-child{color:var(--accent);word-break:break-all;text-align:right}
+code{font-family:var(--mono);color:var(--accent);font-size:11px}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp }       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, onChildAdded, off }
+                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ================================================================
+//  FIREBASE CONFIG  (credenciais do projeto cipherchat)
+// ================================================================
+const firebaseConfig = {
+  apiKey:            "AIzaSyAyVVDf34Nsq4vJ7GFovADWQUiwAQIMbAo",
+  authDomain:        "cipherchat-8d3dd.firebaseapp.com",
+  databaseURL:       "https://cipherchat-8d3dd-default-rtdb.firebaseio.com",
+  projectId:         "cipherchat-8d3dd",
+  storageBucket:     "cipherchat-8d3dd.firebasestorage.app",
+  messagingSenderId: "373800191486",
+  appId:             "1:373800191486:web:8679aef24075ff9cb96caf",
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db    = getDatabase(fbApp);
+
+// ================================================================
+//  STATE
+// ================================================================
+const S={
+  screen:'loading',
+  session:null,   // {key, id, name, myName}
+  messages:[],
+  error:null,
+  fbListener:null,
+  sending:false,
+};
+const LS_CFG ='cc3_cfg';
+const LS_SESS='cc3_sess';
+
+// ================================================================
+//  CRYPTO  AES-256-GCM
+// ================================================================
+const h2b=h=>new Uint8Array(h.match(/.{2}/g).map(b=>parseInt(b,16)));
+const b2h=b=>Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('');
+
+async function genKey(){ return b2h(crypto.getRandomValues(new Uint8Array(32))); }
+
+async function encrypt(text,hexKey){
+  const k=await crypto.subtle.importKey('raw',h2b(hexKey),'AES-GCM',false,['encrypt']);
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(text));
+  const out=new Uint8Array(12+ct.byteLength);
+  out.set(iv);out.set(new Uint8Array(ct),12);
+  return btoa(String.fromCharCode(...out));
+}
+
+async function decrypt(b64,hexKey){
+  const k=await crypto.subtle.importKey('raw',h2b(hexKey),'AES-GCM',false,['decrypt']);
+  const b=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(0,12)},k,b.slice(12));
+  return new TextDecoder().decode(pt);
+}
+
+// ================================================================
+//  STORAGE
+// ================================================================
+function getCfg(){ try{return JSON.parse(localStorage.getItem(LS_CFG)||'{}')}catch{return {}} }
+function saveCfg(o){ localStorage.setItem(LS_CFG,JSON.stringify(o)) }
+function getSess(){ try{return JSON.parse(localStorage.getItem(LS_SESS)||'null')}catch{return null} }
+function saveSess(s){ localStorage.setItem(LS_SESS,JSON.stringify(s)) }
+function clearSess(){ localStorage.removeItem(LS_SESS) }
+
+// ================================================================
+//  PACKET  (código compartilhado com o contato)
+// ================================================================
+function encodePacket(sess){
+  return btoa(JSON.stringify({k:sess.key,id:sess.id,name:sess.name}));
+}
+function decodePacket(str){
+  try{ return JSON.parse(atob(str.trim())); }catch{ return null; }
+}
+
+// ================================================================
+//  FIREBASE REALTIME
+//  Estrutura: /sessions/{sessionId}/messages/{pushId} = {enc, ts}
+//  Cada mensagem é um blob AES-256 — Firebase não vê o conteúdo
+// ================================================================
+async function fbSend(text){
+  const sess=S.session;
+  const enc=await encrypt(JSON.stringify({
+    from:sess.myName, body:text, ts:Date.now()
+  }), sess.key);
+  const msgRef=ref(db,`sessions/${sess.id}/messages`);
+  await push(msgRef,{enc, ts:Date.now()});
+}
+
+function fbListen(){
+  fbUnlisten();
+  const sess=S.session;
+  const msgRef=ref(db,`sessions/${sess.id}/messages`);
+  // onChildAdded dispara para cada msg existente + novas em tempo real
+  const handler=onChildAdded(msgRef, async snap=>{
+    const data=snap.val();
+    if(!data?.enc) return;
+    try{
+      const obj=JSON.parse(await decrypt(data.enc, sess.key));
+      if(S.messages.find(m=>m.ts===obj.ts&&m.from===obj.from)) return;
+      S.messages.push({from:obj.from, body:obj.body, ts:obj.ts, mine:obj.from===sess.myName});
+      S.messages.sort((a,b)=>a.ts-b.ts);
+      render(); scrollBottom();
+    }catch{}
+  });
+  S.fbListener={msgRef, handler};
+}
+
+function fbUnlisten(){
+  if(S.fbListener){
+    off(S.fbListener.msgRef,'child_added',S.fbListener.handler);
+    S.fbListener=null;
+  }
+}
+
+// ================================================================
+//  UTILS
+// ================================================================
+function clip(t){ navigator.clipboard?.writeText(t).catch(()=>{ const a=Object.assign(document.createElement('textarea'),{value:t}); document.body.appendChild(a);a.select();document.execCommand('copy');a.remove(); }); }
+function toast(msg,type='s'){ document.querySelectorAll('.toast').forEach(x=>x.remove()); const el=document.createElement('div'); el.className=`toast t${type}`;el.textContent=msg; document.body.appendChild(el); setTimeout(()=>el?.remove(),2600); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmt(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function scrollBottom(){ setTimeout(()=>{ const w=document.querySelector('.chat-wrap'); if(w)w.scrollTop=w.scrollHeight; },60); }
+
+// ================================================================
+//  INIT
+// ================================================================
+function init(){
+  const cfg=getCfg(), sess=getSess();
+  if(!cfg.myName){ S.screen='config'; }
+  else if(sess){ S.session=sess; S.messages=[]; S.screen='chat'; fbListen(); }
+  else { S.screen='setup'; }
+  render();
+}
+
+// ================================================================
+//  RENDER
+// ================================================================
+function render(){
+  document.getElementById('app').innerHTML=({
+    loading:rLoading, config:rConfig, setup:rSetup, newsess:rNewSess, chat:rChat
+  }[S.screen]||rSetup)();
+  bind();
+  if(S.screen==='chat') scrollBottom();
+}
+
+function rLoading(){ return`<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center"><div style="width:28px;height:28px;border:2px solid rgba(0,200,150,.15);border-top-color:#00c896;border-radius:50%;animation:sp .75s linear infinite"></div></div><style>@keyframes sp{to{transform:rotate(360deg)}}</style>`; }
+
+// ---- CONFIG ----
+function rConfig(){
+  const cfg=getCfg();
+  return`
+<div class="screen">
+  <div class="hdr">
+    <span class="hdr-logo">CIPHER</span>
+    <span class="hdr-sub">configuração inicial</span>
+  </div>
+  <div class="card">
+    <h3>👤 SEU PERFIL</h3>
+    <p style="margin-bottom:10px">Apenas seu nome é necessário. O chat usa Firebase para entregar as mensagens em tempo real.</p>
+    <div class="ig">
+      <label>Seu nome no chat</label>
+      <input type="text" id="cfg-name" placeholder="ex: Matheus" value="${esc(cfg.myName||'')}" maxlength="20" autocomplete="off">
+    </div>
+    <button class="btn btn-p" id="btn-cfg-save">✓ Salvar e continuar</button>
+    ${S.error?`<div class="err" style="margin:10px 0 0">${S.error}</div>`:''}
+  </div>
+  <div style="padding:0 14px">
+    <div class="card" style="background:rgba(0,200,150,.04);border-color:rgba(0,200,150,.15)">
+      <h3>🔒 COMO FUNCIONA</h3>
+      <p>Suas mensagens são criptografadas com <strong>AES-256-GCM</strong> antes de sair do seu dispositivo. O Firebase só armazena texto ilegível — nem nós conseguimos ler.</p>
+    </div>
+  </div>
+</div>`;
+}
+
+// ---- SETUP ----
+function rSetup(){
+  const cfg=getCfg();
+  return`
+<div class="screen">
+  <div class="hdr">
+    <span class="hdr-logo">CIPHER</span>
+    <span class="hdr-sub"><span class="status-dot"></span>chat seguro</span>
+  </div>
+  <div class="card">
+    <h3>🆕 NOVA SESSÃO</h3>
+    <p style="margin-bottom:10px">Crie uma sessão e compartilhe o código com seu contato. A conversa começa quando ele entrar.</p>
+    <div class="ig">
+      <label>Nome da sessão (opcional)</label>
+      <input type="text" id="sess-name" placeholder="ex: Chat com Pai" maxlength="30" autocomplete="off">
+    </div>
+    <button class="btn btn-p" id="btn-new">⚡ Criar sessão</button>
+  </div>
+  <div class="div-or">ou</div>
+  <div class="card">
+    <h3>🔑 ENTRAR EM SESSÃO</h3>
+    <p style="margin-bottom:10px">Cole o código que seu contato compartilhou com você.</p>
+    <div class="ig">
+      <label>Código da sessão</label>
+      <textarea id="join-code" rows="3" placeholder="cole o código aqui…" style="font-size:10px"></textarea>
+    </div>
+    <button class="btn btn-o" id="btn-join">→ Entrar na sessão</button>
+  </div>
+  ${S.error?`<div class="err">${S.error}</div>`:''}
+  <div style="text-align:center;padding:10px">
+    <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">
+      como: <span style="color:var(--accent)">${esc(cfg.myName)}</span>
+    </span><br>
+    <button class="btn-txt" id="btn-go-cfg" style="margin-top:4px">⚙️ alterar nome</button>
+  </div>
+</div>`;
+}
+
+// ---- NEW SESS ----
+function rNewSess(){
+  const sess=S.session, packet=encodePacket(sess);
+  return`
+<div class="screen">
+  <div class="tbar">
+    <div class="tbar-side"><button class="ibtn" id="btn-bk">←</button></div>
+    <div class="tbar-title">NOVA SESSÃO</div>
+    <div class="tbar-side"></div>
+  </div>
+  <div style="padding:14px">
+    <div class="card" style="margin:0 0 10px">
+      <h3>📤 COMPARTILHE ESTE CÓDIGO</h3>
+      <p style="margin-bottom:6px">Envie para seu contato por qualquer canal. Ele contém a chave criptografada — sem ele ninguém lê a conversa.</p>
+      <div class="key-box">${packet}</div>
+      <button class="btn btn-p" id="btn-cp-packet">📋 Copiar código</button>
+    </div>
+    <div class="card" style="margin:0 0 10px">
+      <h3>📋 DETALHES</h3>
+      <div class="info-row"><span>Sessão</span><span>${esc(sess.name)}</span></div>
+      <div class="info-row"><span>Você</span><span>${esc(sess.myName)}</span></div>
+      <div class="info-row"><span>Algoritmo</span><span>AES-256-GCM</span></div>
+      <div class="info-row"><span>Transporte</span><span>Firebase (cifrado)</span></div>
+    </div>
+    <button class="btn btn-p" id="btn-start">💬 Abrir chat e aguardar</button>
+  </div>
+</div>`;
+}
+
+// ---- CHAT ----
+function rChat(){
+  const sess=S.session;
+  const bubbles=S.messages.length===0
+    ?`<div class="empty"><span class="empty-ico">🔒</span>SESSÃO ATIVA<br><span style="color:var(--accent)">${esc(sess.name)}</span><br>aguardando mensagens…<br><span style="font-size:9px">tempo real · AES-256-GCM</span></div>`
+    :S.messages.map(m=>`
+<div class="bubble ${m.mine?'me':'them'}">
+  ${!m.mine?`<div class="bubble-from">${esc(m.from)}</div>`:''}
+  ${esc(m.body)}
+  <div class="bubble-meta"><span class="enc-badge">AES-256</span>${fmt(m.ts)}</div>
+</div>`).join('');
+
+  return`
+<div class="screen">
+  <div class="tbar">
+    <div class="tbar-side"><button class="ibtn" id="btn-end">✕</button></div>
+    <div class="tbar-title">💬 ${esc(sess.name)}</div>
+    <div class="tbar-side"><button class="ibtn" id="btn-cp-sess">📋</button></div>
+  </div>
+  <div class="sess-strip">
+    <div class="sess-chip">
+      <span class="status-dot" style="width:5px;height:5px;margin-right:2px"></span>
+      ${esc(sess.myName)} · tempo real
+    </div>
+  </div>
+  <div class="chat-wrap">${bubbles}</div>
+  <div class="input-bar">
+    <textarea id="msg-in" placeholder="Mensagem cifrada…" rows="1"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+    <button class="send-btn" id="btn-send" ${S.sending?'disabled':''}>
+      ${S.sending?'⏳':'➤'}
+    </button>
+  </div>
+</div>`;
+}
+
+// ================================================================
+//  BIND
+// ================================================================
+function bind(){
+  const $=id=>document.getElementById(id);
+  const on=(id,fn)=>$(id)?.addEventListener('click',fn);
+
+  // CONFIG
+  on('btn-cfg-save',()=>{
+    const name=($('cfg-name')?.value||'').trim();
+    if(!name){S.error='Digite seu nome';render();return;}
+    saveCfg({myName:name});
+    S.error=null;S.screen='setup';render();
+    toast('Nome salvo ✓','s');
+  });
+
+  // SETUP
+  on('btn-go-cfg',()=>{S.error=null;S.screen='config';render();});
+
+  on('btn-new',()=>{
+    const cfg=getCfg();
+    const sessName=($('sess-name')?.value||'').trim()||'Chat Seguro';
+    genKey().then(k=>{
+      S.session={key:k,id:uid(),name:sessName,myName:cfg.myName};
+      S.error=null;S.screen='newsess';render();
+    });
+  });
+
+  on('btn-join',()=>{
+    const cfg=getCfg();
+    const raw=($('join-code')?.value||'').trim();
+    const p=decodePacket(raw);
+    if(!p||!p.k||!p.id){S.error='Código inválido. Verifique e tente novamente.';render();return;}
+    S.session={key:p.k,id:p.id,name:p.name||'Chat Seguro',myName:cfg.myName};
+    S.messages=[];S.error=null;
+    saveSess(S.session);
+    S.screen='chat';
+    fbListen();
+    render();
+    toast('Sessão iniciada ✓','s');
+  });
+
+  // NEW SESS
+  on('btn-cp-packet',()=>{clip(encodePacket(S.session));toast('Código copiado!','s');});
+  on('btn-start',()=>{
+    saveSess(S.session);
+    S.messages=[];
+    S.screen='chat';
+    fbListen();
+    render();
+  });
+  on('btn-bk',()=>{S.error=null;S.session=null;S.screen='setup';render();});
+
+  // CHAT
+  on('btn-end',()=>{
+    if(!confirm('Encerrar sessão? As mensagens locais serão apagadas.'))return;
+    fbUnlisten();
+    S.session=null;S.messages=[];clearSess();
+    S.screen='setup';render();
+  });
+  on('btn-cp-sess',()=>{
+    if(S.session){clip(encodePacket(S.session));toast('Código copiado!','s');}
+  });
+
+  on('btn-send',async()=>{
+    const ta=$('msg-in'),txt=(ta?.value||'').trim();
+    if(!txt)return;
+    S.sending=true;render();
+    try{
+      await fbSend(txt);
+      if(ta){ta.value='';ta.style.height='auto';}
+      S.sending=false;render();
+    }catch(e){
+      S.sending=false;toast('Erro: '+e.message,'e');render();
+    }
+  });
+
+  $('msg-in')?.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('btn-send')?.click();}
+  });
+}
+
+// ================================================================
+//  GO
+// ================================================================
+init();
+</script>
+</body>
+</html>
